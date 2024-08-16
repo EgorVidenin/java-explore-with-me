@@ -26,7 +26,7 @@ public class StatsController {
 
     @PostMapping("/hit")
     public ResponseEntity<HitDto> hit(@RequestBody HitDto hitDto) {
-        log.info("Запрос на добавление hit {}", hitDto);
+        log.info("Получен запрос на добавление hit {}", hitDto);
         return ResponseEntity.ok().body(statsService.hit(hitDto));
     }
 

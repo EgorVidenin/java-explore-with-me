@@ -6,14 +6,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "hits")
 @AllArgsConstructor
-@Data
+@NoArgsConstructor
+@Getter
+@Setter
 public class Hit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
