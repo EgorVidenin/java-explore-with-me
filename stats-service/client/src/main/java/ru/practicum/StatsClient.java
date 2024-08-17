@@ -11,9 +11,12 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class StatsClient {
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final WebClient webClient;
 
     public String url;
@@ -42,10 +45,10 @@ public class StatsClient {
     }
 
     public List<StatsDto> getStats(LocalDateTime startLocalDateTime, LocalDateTime endLocalDateTime, String uris, boolean unique) {
-        String start = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        String end = endLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String start = startLocalDateTime.format(DATE_TIME_FORMATTER);
+        String end = endLocalDateTime.format(DATE_TIME_FORMATTER);
         String uri;
-        if (uris != null) {
+        if (Objects.nonNull(uris)) {
             uri = "/stats?start={start}&end={end}&uris={urisString}&unique={unique}";
         } else {
             uri = "/stats?start={start}&end={end}&unique={unique}";
