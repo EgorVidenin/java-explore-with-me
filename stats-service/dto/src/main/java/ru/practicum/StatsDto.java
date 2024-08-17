@@ -12,6 +12,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class StatsDto {
+
     private String app;
     private String uri;
     private long hits;

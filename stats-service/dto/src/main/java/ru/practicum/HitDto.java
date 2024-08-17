@@ -16,9 +16,13 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class HitDto {
+
     private String app;
+
     private String uri;
+
     private String ip;
+
     @JsonProperty("timestamp")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
