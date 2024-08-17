@@ -2,6 +2,7 @@ package ru.practicum.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.StatsDto;
 import ru.practicum.model.Hit;
 
@@ -10,33 +11,39 @@ import java.util.List;
 
 public interface StatsRepository extends JpaRepository<Hit, Long> {
 
-    @Query(value = "select new ru.practicum.StatsDto" +
-            "(s.app, s.uri, count(s.uri)) from Hit as s " +
-            "where s.timestamp between ?1 and ?2 " +
-            "and s.uri in ?3 " +
-            "group by s.app, s.uri " +
-            "order by count(s.uri) desc ")
-    List<StatsDto> getWithUri(LocalDateTime start, LocalDateTime end, List<String> uris);
+    @Query("SELECT new ru.practicum.StatsDto(s.app, s.uri, COUNT(s.uri)) " +
+            "FROM Hit s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "AND s.uri IN :uris " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(s.uri) DESC")
+    List<StatsDto> getWithUri(@Param("start") LocalDateTime start,
+                              @Param("end") LocalDateTime end,
+                              @Param("uris") List<String> uris);
 
-    @Query(value = "select new ru.practicum.StatsDto" +
-            "(s.app, s.uri, count(distinct s.ip)) from Hit as s " +
-            "where s.timestamp between ?1 and ?2 " +
-            "and s.uri in ?3 " +
-            "group by s.app, s.uri " +
-            "order by count(distinct s.ip) desc")
-    List<StatsDto> getWithUriUnique(LocalDateTime start, LocalDateTime end, List<String> uris);
+    @Query("SELECT new ru.practicum.StatsDto(s.app, s.uri, COUNT(DISTINCT s.ip)) " +
+            "FROM Hit s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "AND s.uri IN :uris " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(DISTINCT s.ip) DESC")
+    List<StatsDto> getWithUriUnique(@Param("start") LocalDateTime start,
+                                    @Param("end") LocalDateTime end,
+                                    @Param("uris") List<String> uris);
 
-    @Query(value = "select new ru.practicum.StatsDto" +
-            "(s.app, s.uri, count(s.uri)) from Hit as s " +
-            "where s.timestamp between ?1 and ?2 " +
-            "group by s.app, s.uri " +
-            "order by count(s.uri) desc ")
-    List<StatsDto> getWithoutUri(LocalDateTime start, LocalDateTime end);
+    @Query("SELECT new ru.practicum.StatsDto(s.app, s.uri, COUNT(s.uri)) " +
+            "FROM Hit s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(s.uri) DESC")
+    List<StatsDto> getWithoutUri(@Param("start") LocalDateTime start,
+                                 @Param("end") LocalDateTime end);
 
-    @Query(value = "select new ru.practicum.StatsDto" +
-            "(s.app, s.uri, count(distinct s.ip)) from Hit as s " +
-            "where s.timestamp between ?1 and ?2 " +
-            "group by s.app, s.uri " +
-            "order by count(distinct s.ip) desc")
-    List<StatsDto> getWithoutUriUnique(LocalDateTime start, LocalDateTime end);
+    @Query("SELECT new ru.practicum.StatsDto(s.app, s.uri, COUNT(DISTINCT s.ip)) " +
+            "FROM Hit s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(DISTINCT s.ip) DESC")
+    List<StatsDto> getWithoutUriUnique(@Param("start") LocalDateTime start,
+                                       @Param("end") LocalDateTime end);
 }
