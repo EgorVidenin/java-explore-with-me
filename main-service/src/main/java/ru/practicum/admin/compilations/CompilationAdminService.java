@@ -18,6 +18,7 @@ import ru.practicum.users.events.model.dto.EventShortDto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class CompilationAdminService {
         compilation.setPinned(Boolean.TRUE.equals(newCompilationDto.getPinned()));
         compilationRepository.save(compilation);
 
-        if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
+        if (Objects.nonNull(newCompilationDto.getEvents()) && !newCompilationDto.getEvents().isEmpty()) {
             saveCompilationEvents(newCompilationDto.getEvents(), compilation);
         }
 
@@ -49,14 +50,14 @@ public class CompilationAdminService {
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequestDto updateCompilationRequestDto) {
         Compilation compilation = getCompilationById(compId);
 
-        if (updateCompilationRequestDto.getTitle() != null) {
+        if (Objects.nonNull(updateCompilationRequestDto.getTitle())) {
             compilation.setTitle(updateCompilationRequestDto.getTitle());
         }
-        if (updateCompilationRequestDto.getPinned() != null) {
+        if (Objects.nonNull(updateCompilationRequestDto.getPinned())) {
             compilation.setPinned(updateCompilationRequestDto.getPinned());
         }
 
-        if (updateCompilationRequestDto.getEvents() != null) {
+        if (Objects.nonNull(updateCompilationRequestDto.getEvents())) {
             compilationsEventRepository.deleteAllByCompilationId(compId);
             if (!updateCompilationRequestDto.getEvents().isEmpty()) {
                 saveCompilationEvents(updateCompilationRequestDto.getEvents(), compilation);
