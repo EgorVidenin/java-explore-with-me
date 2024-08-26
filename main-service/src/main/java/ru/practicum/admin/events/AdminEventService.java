@@ -20,6 +20,7 @@ import ru.practicum.users.events.model.dto.EventMapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,40 +36,40 @@ public class AdminEventService {
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateEvent) {
         Event event = getEventById(eventId);
 
-        if (updateEvent.getAnnotation() != null) {
+        if (Objects.nonNull(updateEvent.getAnnotation())) {
             event.setAnnotation(updateEvent.getAnnotation());
         }
-        if (updateEvent.getDescription() != null) {
+        if (Objects.nonNull(updateEvent.getDescription())) {
             event.setDescription(updateEvent.getDescription());
         }
-        if (updateEvent.getPaid() != null) {
+        if (Objects.nonNull(updateEvent.getPaid())) {
             event.setPaid(updateEvent.getPaid());
         }
-        if (updateEvent.getRequestModeration() != null) {
+        if (Objects.nonNull(updateEvent.getRequestModeration())) {
             event.setRequestModeration(updateEvent.getRequestModeration());
         }
-        if (updateEvent.getEventDate() != null) {
+        if (Objects.nonNull(updateEvent.getEventDate())) {
             LocalDateTime eventDate = LocalDateTime.parse(updateEvent.getEventDate(), formatter);
             if (eventDate.isBefore(LocalDateTime.now())) {
                 throw new BadRequestException("Event date is before current date");
             }
             event.setEventDate(eventDate);
         }
-        if (updateEvent.getTitle() != null) {
+        if (Objects.nonNull(updateEvent.getTitle())) {
             event.setTitle(updateEvent.getTitle());
         }
-        if (updateEvent.getParticipantLimit() != null) {
+        if (Objects.nonNull(updateEvent.getParticipantLimit())) {
             event.setParticipantLimit(updateEvent.getParticipantLimit());
         }
-        if (updateEvent.getLocation() != null) {
+        if (Objects.nonNull(updateEvent.getLocation())) {
             event.setLat(updateEvent.getLocation().getLat());
             event.setLon(updateEvent.getLocation().getLon());
         }
-        if (updateEvent.getCategory() != null) {
+        if (Objects.nonNull(updateEvent.getCategory())) {
             Category category = getCategoryById(updateEvent.getCategory());
             event.setCategory(category);
         }
-        if (updateEvent.getStateAction() != null) {
+        if (Objects.nonNull(updateEvent.getStateAction())) {
             if (updateEvent.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) && event.getState().equals(State.PUBLISHED)) {
                 throw new DataIntegrityViolationException("Event is already published");
             }
@@ -92,31 +93,34 @@ public class AdminEventService {
 
     public List<EventFullDto> getEvents(List<Long> users, List<String> states, List<Long> categories, String rangeStart,
                                         String rangeEnd, Integer from, Integer size) {
-        int page = from != null ? from / size : 0;
-        int pageSize = size != null ? size : 10;
+        if (size == null || size <= 0) {
+            throw new IllegalArgumentException("Size must be greater than 0");
+        }
+        int page = Objects.nonNull(from) ? from / size : 0;
+        int pageSize = Objects.nonNull(size) ? size : 10;
         Pageable pageable = PageRequest.of(page, pageSize);
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startTime = rangeStart != null ? LocalDateTime.parse(rangeStart, formatter) : null;
-        LocalDateTime endTime = rangeEnd != null ? LocalDateTime.parse(rangeEnd, formatter) : null;
+        LocalDateTime startTime = Objects.nonNull(rangeStart) ? LocalDateTime.parse(rangeStart, formatter) : null;
+        LocalDateTime endTime = Objects.nonNull(rangeEnd) ? LocalDateTime.parse(rangeEnd, formatter) : null;
 
         List<Event> eventsList;
         if (startTime == null && endTime == null) {
             if (users == null && states == null && categories == null) {
                 eventsList = eventRepository.findAll(pageable).getContent();
-            } else if (users != null && states == null && categories == null) {
+            } else if (Objects.nonNull(users) && states == null && categories == null) {
                 eventsList = eventRepository.getEventsWithUsers(users, now, pageable);
-            } else if (users == null && states != null && categories == null) {
+            } else if (users == null && Objects.nonNull(states) && categories == null) {
                 List<State> stateList = parseStates(states);
                 eventsList = eventRepository.getEventsWithState(stateList, now, pageable);
-            } else if (users == null && states == null && categories != null) {
+            } else if (users == null && states == null && Objects.nonNull(categories)) {
                 eventsList = eventRepository.getEventsWithCategory(categories, now, pageable);
-            } else if (users != null && states != null && categories == null) {
+            } else if (Objects.nonNull(users) && Objects.nonNull(states) && categories == null) {
                 List<State> stateList = parseStates(states);
                 eventsList = eventRepository.getEventsWithUsersAndStates(users, stateList, now, pageable);
-            } else if (users != null && states == null && categories != null) {
+            } else if (Objects.nonNull(users) && states == null && Objects.nonNull(categories)) {
                 eventsList = eventRepository.getEventsWithUsersAndCategories(users, categories, now, pageable);
-            } else if (users == null && states != null && categories != null) {
+            } else if (users == null && Objects.nonNull(states) && Objects.nonNull(categories)) {
                 List<State> stateList = parseStates(states);
                 eventsList = eventRepository.getEventsWithStateAndCategories(stateList, categories, now, pageable);
             } else {
@@ -126,19 +130,19 @@ public class AdminEventService {
         } else {
             if (users == null && states == null && categories == null) {
                 eventsList = eventRepository.getEventsWithTimes(startTime, endTime, pageable);
-            } else if (users != null && states == null && categories == null) {
+            } else if (Objects.nonNull(users) && states == null && categories == null) {
                 eventsList = eventRepository.getEventsWithUsersAndTimes(users, startTime, endTime, pageable);
-            } else if (users == null && states != null && categories == null) {
+            } else if (users == null && Objects.nonNull(states) && categories == null) {
                 List<State> stateList = parseStates(states);
                 eventsList = eventRepository.getEventsWithStateAndTimes(stateList, startTime, endTime, pageable);
-            } else if (users == null && states == null && categories != null) {
+            } else if (users == null && states == null && Objects.nonNull(categories)) {
                 eventsList = eventRepository.getEventsWithCategoryAndTimes(categories, startTime, endTime, pageable);
-            } else if (users != null && states != null && categories == null) {
+            } else if (Objects.nonNull(users) && Objects.nonNull(states) && categories == null) {
                 List<State> stateList = parseStates(states);
                 eventsList = eventRepository.getEventsWithUsersAndStatesAndTimes(users, stateList, startTime, endTime, pageable);
-            } else if (users != null && states == null && categories != null) {
+            } else if (Objects.nonNull(users) && states == null && Objects.nonNull(categories)) {
                 eventsList = eventRepository.getEventsWithUsersAndCategoriesAndTimes(users, categories, startTime, endTime, pageable);
-            } else if (users == null && states != null && categories != null) {
+            } else if (users == null && Objects.nonNull(states) && Objects.nonNull(categories)) {
                 List<State> stateList = parseStates(states);
                 eventsList = eventRepository.getEventsWithStateAndCategoriesAndTimes(stateList, categories, startTime, endTime, pageable);
             } else {
